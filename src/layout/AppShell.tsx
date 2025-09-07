@@ -2,6 +2,7 @@ import { Layout, Grid, Drawer, Button } from 'antd'
 import { MenuOutlined, CloseOutlined } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { myPrimaryColor } from '../utils/constants'
 
 const { Header, Sider, Content } = Layout
 const { useBreakpoint } = Grid
@@ -36,7 +37,7 @@ export const AppShell = ({
         style={{
           height: 64,
           paddingInline: 16,
-          background: '#fff',
+          background: `${myPrimaryColor}`,
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           alignItems: 'center',
@@ -87,7 +88,9 @@ export const AppShell = ({
               padding: 24,
               background: '#f5f5f5',
               minHeight: 'calc(100vh - 64px)',
+              maxHeight: 'calc(100vh - 64px)',
               transition: 'margin-left 0.2s',
+              overflow: 'auto',
             }}
           >
             {children}

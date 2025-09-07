@@ -1,9 +1,18 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { PATH_INICIAL, PATH_LOGIN, PATH_MAIN, PATH_NOT_FOUND } from './pathts'
+import {
+  PATH_CONSULT_CLIENT,
+  PATH_INICIAL,
+  PATH_LOGIN,
+  PATH_MAIN,
+  PATH_NOT_FOUND,
+  PATH_REGISTER_CLIENT,
+} from './pathts'
 import PublicRoutes from './PublicRoutes'
 import PrivateRoutes from './PrivateRoutes'
 import NotFaundPage from '../layout/NotFaundPage'
 import { Login } from '../features/auth/pages/Login'
+import { RegisterClient } from '../features/client/page/RegisterClient'
+import ConsulClient from '../features/client/page/ConsulClient'
 
 const AppRoutes = () => {
   return (
@@ -12,7 +21,6 @@ const AppRoutes = () => {
         path={PATH_LOGIN}
         element={
           <PublicRoutes>
-            {/* <h1>Login</h1> */}
             <Login />
           </PublicRoutes>
         }
@@ -24,6 +32,22 @@ const AppRoutes = () => {
       <Route
         path={PATH_MAIN}
         element={<PrivateRoutes>Holaa desde aqui</PrivateRoutes>}
+      />
+      <Route
+        path={PATH_REGISTER_CLIENT}
+        element={
+          <PrivateRoutes>
+            <RegisterClient />
+          </PrivateRoutes>
+        }
+      />
+      <Route
+        path={PATH_CONSULT_CLIENT}
+        element={
+          <PrivateRoutes>
+            <ConsulClient />
+          </PrivateRoutes>
+        }
       />
       <Route path={PATH_NOT_FOUND} element={<NotFaundPage />} />
     </Routes>

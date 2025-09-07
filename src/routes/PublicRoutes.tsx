@@ -1,16 +1,15 @@
 import { type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { PATH_MAIN } from './pathts'
-import { getSessionInfo } from '../utils/getSessionInfo'
+import { useAuth } from '../hooks/UseAuthContext'
 
 interface PublicRouterProps {
   children: ReactNode
 }
 
 function PublicRoutes({ children }: PublicRouterProps) {
-  const isLogged = getSessionInfo()
-
-  return isLogged ? <Navigate to={PATH_MAIN} /> : children
+  const { user } = useAuth()
+  return user ? <Navigate to={PATH_MAIN} /> : children
 }
 
 export default PublicRoutes

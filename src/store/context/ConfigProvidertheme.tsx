@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react'
 import { ConfigProvider, theme, App as AntdApp } from 'antd'
-import { myPrimaryColor } from '../utils/constants'
+import { myPrimaryColor } from '../../utils/constants'
 
 interface providerProps {
   children: ReactNode
