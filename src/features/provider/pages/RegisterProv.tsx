@@ -10,15 +10,17 @@ import GeneralEntityForm from '../../general/components/GeneralEntityForm'
 import { CustomButton } from '../../../components/Button/CustomButton'
 import { Form, Row } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { ClientDto } from '../dto-clientDto'
+
 import { useCustomMutation } from '../../../hooks/UseCustomMutation'
-import clientService from '../services/clientService'
+
 import { showNotification } from '../../../utils/showNotification'
 import { showHandleError } from '../../../utils/handleError'
 import { useEffect } from 'react'
 import { PATH_CONSULT_CLIENT } from '../../../routes/pathts'
+import type { ClientDto } from '../../client/dto-clientDto'
+import clientService from '../../client/services/clientService'
 
-export const RegisterClient = () => {
+export const RegisterProv = () => {
   const [form] = Form.useForm()
   const location = useLocation()
   const navigate = useNavigate()
@@ -38,7 +40,7 @@ export const RegisterClient = () => {
     onSuccess: () => {
       showNotification({
         type: 'success',
-        message: `Cliente ${edit ? 'actualizado' : 'creado'} correctamente`,
+        message: `Proveedor ${edit ? 'actualizado' : 'creado'} correctamente`,
       })
       form.resetFields()
       navigate(PATH_CONSULT_CLIENT)

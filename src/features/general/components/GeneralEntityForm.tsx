@@ -19,7 +19,7 @@ import type {
   ProvinciaDto,
 } from '../dto/generalDto'
 import { CustomInputNumber } from '../../../components/input/CustomInputNumber'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import generalService from '../services/generalService'
 
@@ -31,6 +31,8 @@ export interface PropsInterface {
 
 function GeneralEntityForm({ edit, view, form }: PropsInterface) {
   const [coinIngres, setCoinIngres] = useState<string | null>('')
+  const [provinceSelected, setProvinceSelected] = useState<number | null>(null)
+  const [ciudadSelected, setCiudadSelected] = useState<number | null>(null)
   const [tipoClientEmpresa, setTipoClientEmpresa] = useState<boolean>(false)
   const { data: dataPais } = useQuery({
     queryKey: ['getCountry'],
@@ -71,7 +73,7 @@ function GeneralEntityForm({ edit, view, form }: PropsInterface) {
               disabled={view}
               onChange={(value) =>
                 setTipoClientEmpresa(
-                  value.target.value === TipoEntidad.EMPRESA ? true : false
+                  value.target.value === TipoEntidad.EMPRESA ? true : false,
                 )
               }
               options={[
@@ -151,25 +153,39 @@ function GeneralEntityForm({ edit, view, form }: PropsInterface) {
           <CustomFormItem required label="Provincia" name="ID_PROVINCIA">
             <CustomSelect
               disabled={view}
+              onChange={(value) => {
+                setProvinceSelected(value)
+                form?.resetFields(['ID_MUNICIPIO', 'ID_CIUDAD'])
+              }}
               options={provinces?.map((prov: ProvinciaDto) => ({
                 label: prov?.NOMBRE,
                 value: prov?.ID,
               }))}
             />
           </CustomFormItem>
-          <CustomFormItem required label="Municipio" name="ID_MUNICIPIO">
+          <CustomFormItem required label="Ciudad" name="ID_MUNICIPIO">
             <CustomSelect
               disabled={view}
-              options={municipios?.map((municip: MunicipioDto) => ({
-                label: municip?.NOMBRE,
-                value: municip?.ID,
-              }))}
+              onChange={(value) => {
+                setCiudadSelected(value)
+                form?.resetFields(['ID_CIUDAD'])
+              }}
+              options={municipios
+                ?.filter(
+                  (municip) => municip?.ID_PROVINCIA === provinceSelected,
+                )
+                ?.map((municip: MunicipioDto) => ({
+                  label: municip?.NOMBRE,
+                  value: municip?.ID,
+                }))}
             />
           </CustomFormItem>
           <CustomFormItem label="Sector" name="ID_CIUDAD">
             <CustomSelect
               disabled={view}
-              options={Sectors?.map((sector: CiudadDto) => ({
+              options={Sectors?.filter(
+                (sector) => sector?.ID_MUNICIPIO === ciudadSelected,
+              )?.map((sector: CiudadDto) => ({
                 label: sector?.NOMBRE,
                 value: sector?.ID,
               }))}

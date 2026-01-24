@@ -1,11 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import {
   PATH_CONSULT_CLIENT,
+  PATH_CONSULT_PROVEEDOR,
   PATH_INICIAL,
   PATH_LOGIN,
   PATH_MAIN,
   PATH_NOT_FOUND,
   PATH_REGISTER_CLIENT,
+  PATH_REGISTER_PROVEEDOR,
 } from './pathts'
 import PublicRoutes from './PublicRoutes'
 import PrivateRoutes from './PrivateRoutes'
@@ -13,6 +15,8 @@ import NotFaundPage from '../layout/NotFaundPage'
 import { Login } from '../features/auth/pages/Login'
 import { RegisterClient } from '../features/client/page/RegisterClient'
 import ConsulClient from '../features/client/page/ConsulClient'
+import ConsulProveedor from '../features/provider/pages/ConsultProv'
+import { RegisterProv } from '../features/provider/pages/RegisterProv'
 
 const AppRoutes = () => {
   return (
@@ -46,6 +50,22 @@ const AppRoutes = () => {
         element={
           <PrivateRoutes>
             <ConsulClient />
+          </PrivateRoutes>
+        }
+      />
+      <Route
+        path={PATH_CONSULT_PROVEEDOR}
+        element={
+          <PrivateRoutes>
+            <ConsulProveedor />
+          </PrivateRoutes>
+        }
+      />
+      <Route
+        path={PATH_REGISTER_PROVEEDOR}
+        element={
+          <PrivateRoutes>
+            <RegisterProv />
           </PrivateRoutes>
         }
       />
