@@ -67,7 +67,7 @@ const ConsulClient = () => {
       dataIndex: ['ENTIDAD', 'DOCUMENTO_IDENT'],
       ...getColumnSearchProps(
         ['ENTIDAD', 'DOCUMENTO_IDENT'],
-        'Documento Identidad'
+        'Documento Identidad',
       ),
     },
     {

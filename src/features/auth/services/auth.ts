@@ -11,6 +11,11 @@ class AuthService {
     const res = await serverCore.post(`/user/logout`)
     return res.data
   }
+
+  async getMe() {
+    const res = await serverCore.get(`/user/me`)
+    return res.data.data
+  }
 }
 
 export default new AuthService()

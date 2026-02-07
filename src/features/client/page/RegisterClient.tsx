@@ -1,6 +1,5 @@
 import { CustomTitle } from '../../../components/tittle/CustomTittle'
 import { CustomForm } from '../../../components/form/CustomForm'
-
 import {
   deleteNullValues,
   EstadoGeneral,
@@ -29,11 +28,11 @@ export const RegisterClient = () => {
   useEffect(() => {
     if (clientData) {
       const { ENTIDAD, ...clientInfo } = clientData || {}
-
       form.setFieldsValue({ ...ENTIDAD, ...clientInfo })
     }
   }, [clientData, form])
-  const { mutate: upserClients, isPending } = useCustomMutation({
+
+  const { mutate: upsertClient, isPending } = useCustomMutation({
     execute: clientService.upsertClient,
     onSuccess: () => {
       showNotification({
@@ -45,26 +44,34 @@ export const RegisterClient = () => {
     },
     onError: (e) => showHandleError(e as never),
   })
+
   const handleSave = (data: ClientDto) => {
-    const newData = deleteNullValues({
+    const payload = deleteNullValues({
+      ID: clientData?.ID,
+      ESTADO: EstadoGeneral.ACTIVO,
       ENTIDAD: {
         ...data,
         ID: clientData?.ENTIDAD?.ID,
         ESTADO: EstadoGeneral.ACTIVO,
       },
-      CLIENTE: {
-        ID: clientData?.ID,
-      },
     })
-    const condition = {
-      ...newData,
-    }
 
-    upserClients(condition)
+    upsertClient(payload as ClientDto)
   }
+
+  const handleCancel = () => {
+    form.resetFields()
+    if (clientData) {
+      const { ENTIDAD, ...clientInfo } = clientData || {}
+      form.setFieldsValue({ ...ENTIDAD, ...clientInfo })
+    }
+  }
+
   return (
     <>
-      <CustomTitle level={2}>Registrar Clientes</CustomTitle>
+      <CustomTitle level={2}>
+        {onlyView ? 'Detalles del' : edit ? 'Editar' : 'Registrar'} Cliente
+      </CustomTitle>
       <CustomForm
         form={form}
         onFinish={handleSave}
@@ -78,16 +85,16 @@ export const RegisterClient = () => {
           <CustomButton onClick={() => navigate(-1)} type="default">
             Atrás
           </CustomButton>
-          <CustomButton disabled={onlyView} danger htmlType="reset">
-            Cancelar
-          </CustomButton>
-          <CustomButton
-            disabled={onlyView}
-            loading={isPending}
-            htmlType="submit"
-          >
-            Guardar
-          </CustomButton>
+          {!onlyView && (
+            <>
+              <CustomButton danger htmlType="button" onClick={handleCancel}>
+                Cancelar
+              </CustomButton>
+              <CustomButton loading={isPending} htmlType="submit">
+                Guardar
+              </CustomButton>
+            </>
+          )}
         </Row>
       </CustomForm>
     </>

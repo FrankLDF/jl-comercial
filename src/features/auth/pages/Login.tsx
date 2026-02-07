@@ -17,7 +17,10 @@ export const Login = () => {
     onSuccess: () => {
       navigate(PATH_MAIN, { replace: true })
     },
-    onError: (err) => showHandleError(err as never),
+    onError: (err) => {
+      console.log({ err })
+      showHandleError(err as never)
+    },
   })
   return (
     <LoginShell
@@ -26,11 +29,11 @@ export const Login = () => {
       }
       form={
         <CustomForm layout="vertical" onFinish={loginUser}>
-          <CustomFormItem label="Usuario" name="NOMBRE_USUARIO" required>
+          <CustomFormItem label="Usuario" name="nombre_usuario" required>
             <CustomInput size="large" />
           </CustomFormItem>
 
-          <CustomFormItem label="Contraseña" name="PASSWORD" required>
+          <CustomFormItem label="Contraseña" name="password" required>
             <CustomInput.Password size="large" />
           </CustomFormItem>
 

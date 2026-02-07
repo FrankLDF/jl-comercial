@@ -2,14 +2,15 @@ import { createContext } from 'react'
 import type { AuthCredentials } from '../../features/auth/models/authCredencials'
 
 export type User = {
-  ID: number
-  ID_PERSONAL: number
-  NOMBRE_USUARIO: string
-  ESTADO: string
-  FECHA_INSERCION: string
-  USUARIO_INSERCION: string
-  FECHA_ACTUALIZACION: string | null
-  USUARIO_ACTUALIZACION: string | null
+  id: number
+  id_personal: number
+  nombre_usuario: string
+  estado: string
+  fecha_insercion: string
+  usuario_insercion: string
+  fecha_actualizacion: string | null
+  usuario_actualizacion: string | null
+  token?: string
 }
 
 export type AuthContextType = {

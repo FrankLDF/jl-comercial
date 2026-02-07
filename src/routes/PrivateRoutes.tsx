@@ -5,6 +5,7 @@ import { AppShell } from '../layout/AppShell'
 import Header from '../components/header/Header'
 import { Navbar } from '../components/navbar/Navbar'
 import { useAuth } from '../hooks/UseAuthContext'
+import { Spin } from 'antd'
 
 interface PrivateRoutesProps {
   children: ReactNode
@@ -12,15 +13,34 @@ interface PrivateRoutesProps {
 
 function PrivateRoutes({ children }: PrivateRoutesProps) {
   const { user, loading } = useAuth()
-  if (!loading) {
-    return !user ? (
-      <Navigate to={PATH_LOGIN} replace />
-    ) : (
-      <AppShell headerContent={<Header />} navContent={<Navbar />}>
-        {children}
-      </AppShell>
+
+  // Mostrar loader mientras se valida la sesión
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <Spin size="large" />
+      </div>
     )
   }
+
+  // Si no hay usuario, redirigir a login
+  if (!user) {
+    return <Navigate to={PATH_LOGIN} replace />
+  }
+
+  // Si hay usuario, mostrar el contenido protegido
+  return (
+    <AppShell headerContent={<Header />} navContent={<Navbar />}>
+      {children}
+    </AppShell>
+  )
 }
 
 export default PrivateRoutes

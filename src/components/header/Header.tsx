@@ -13,6 +13,7 @@ import { CustomButton } from '../Button/CustomButton'
 import { CustomConfirm } from '../pop-confirm/CustomConfirm'
 import { useCustomMutation } from '../../hooks/UseCustomMutation'
 import { useAuth } from '../../hooks/UseAuthContext'
+import { showNotification } from '../../utils/showNotification'
 
 const { Text } = Typography
 
@@ -22,15 +23,29 @@ function Header() {
   const isMobile = !screens.md
 
   const { user, logout } = useAuth()
-  const firstLetter = user?.NOMBRE_USUARIO?.slice(0, 2)?.toUpperCase() || 'U'
+  const firstLetter = user?.nombre_usuario?.slice(0, 2)?.toUpperCase() || 'U'
   const { mutate: logoutnUser, isPending } = useCustomMutation({
     execute: logout,
+    onSuccess: () => {
+      showNotification({
+        type: 'success',
+        message: 'Sesión cerrada correctamente',
+      })
+    },
+    onError: (err) => {
+      console.error('Error al cerrar sesión:', err)
+      // Aunque falle el logout en el backend, limpiar la sesión local
+      showNotification({
+        type: 'warning',
+        message: 'Sesión cerrada localmente',
+      })
+    },
   })
 
   const dropdownItems: MenuProps['items'] = [
     {
       key: 'name',
-      label: <Text strong>{user?.NOMBRE_USUARIO || 'Usuario'}</Text>,
+      label: <Text strong>{user?.nombre_usuario || 'Usuario'}</Text>,
       disabled: true,
     },
     {
@@ -75,7 +90,7 @@ function Header() {
             </Col>
             <Col>
               <Text style={{ color: 'white' }} strong>
-                {user?.NOMBRE_USUARIO || 'Usuario'}
+                {user?.nombre_usuario || 'Usuario'}
               </Text>
             </Col>
             <Col>
