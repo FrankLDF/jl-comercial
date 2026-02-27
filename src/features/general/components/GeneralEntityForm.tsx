@@ -1,4 +1,4 @@
-import { Col, Divider, Row, type FormInstance } from 'antd'
+import { Col, Divider, Row, Form, type FormInstance } from 'antd'
 import { CustomFormItem } from '../../../components/form/CustomFormItem'
 import { CustomRadioGroup } from '../../../components/radio/CustomRadioGroups'
 import {
@@ -19,7 +19,6 @@ import type {
   ProvinciaDto,
 } from '../dto/generalDto'
 import { CustomInputNumber } from '../../../components/input/CustomInputNumber'
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import generalService from '../services/generalService'
 
@@ -27,19 +26,24 @@ export interface PropsInterface {
   edit?: boolean
   view?: boolean
   form?: FormInstance
+  isProvider?: boolean
 }
 
-function GeneralEntityForm({ edit, view, form }: PropsInterface) {
-  const [coinIngres, setCoinIngres] = useState<string | null>('')
-  const [provinceSelected, setProvinceSelected] = useState<number | null>(null)
-  const [ciudadSelected, setCiudadSelected] = useState<number | null>(null)
-  const [tipoClientEmpresa, setTipoClientEmpresa] = useState<boolean>(false)
+function GeneralEntityForm({ edit, view, form, isProvider }: PropsInterface) {
+  const watchTipoEntidad = Form.useWatch('tipo_entidad', form)
+  const watchMonedaIngreso = Form.useWatch('moneda_ingreso', form)
+  const watchIdProvincia = Form.useWatch('id_provincia', form)
+  const watchIdMunicipio = Form.useWatch('id_municipio', form)
+
+  const isEmpresa = watchTipoEntidad === TipoEntidad.EMPRESA
+  const coinLabel = watchMonedaIngreso || ''
+  
+  // ... imports search key ...
   const { data: dataPais } = useQuery({
     queryKey: ['getCountry'],
     queryFn: generalService.getCountry,
   })
   const paises: PaisDto[] = dataPais?.countries
-
   const { data: dataProvince } = useQuery({
     queryKey: ['getProvince'],
     queryFn: generalService.getProvince,
@@ -64,25 +68,20 @@ function GeneralEntityForm({ edit, view, form }: PropsInterface) {
       <Row justify={'space-around'}>
         <Col xs={24} md={10}>
           {(edit || view) && (
-            <CustomFormItem required label="Código" name="ID">
+            <CustomFormItem required label="Código" name="id">
               <CustomInput readOnly />
             </CustomFormItem>
           )}
-          <CustomFormItem required label="Tipo de Entidad" name="TIPO_ENTIDAD">
+          <CustomFormItem required label="Tipo de Entidad" name="tipo_entidad">
             <CustomRadioGroup
               disabled={view}
-              onChange={(value) =>
-                setTipoClientEmpresa(
-                  value.target.value === TipoEntidad.EMPRESA ? true : false,
-                )
-              }
               options={[
                 { label: 'Fisica', value: TipoEntidad.FISICA },
                 { label: 'Empresa', value: TipoEntidad.EMPRESA },
               ]}
             />
           </CustomFormItem>
-          <CustomFormItem required label="Tipo Documento" name="TIPO_DOC_IDENT">
+          <CustomFormItem required label="Tipo Documento" name="tipo_doc_ident">
             <CustomSelect
               disabled={view}
               options={[
@@ -92,22 +91,22 @@ function GeneralEntityForm({ edit, view, form }: PropsInterface) {
               ]}
             />
           </CustomFormItem>
-          <CustomFormItem required label="NO. Documento" name="DOCUMENTO_IDENT">
+          <CustomFormItem required label="NO. Documento" name="documento_ident">
             <CustomInput.Search
               readOnly={view}
               // onSearch={(value) => console.log(value)}
             />
           </CustomFormItem>
-          <CustomFormItem required label="Nombre" name="NOMBRES">
+          <CustomFormItem required label="Nombre" name="nombres">
             <CustomInput readOnly={view} />
           </CustomFormItem>
-          {!tipoClientEmpresa && (
+          {!isEmpresa && (
             <>
-              <CustomFormItem required label="Apellido" name="APELLIDOS">
+              <CustomFormItem required label="Apellido" name="apellidos">
                 <CustomInput readOnly={view} />
               </CustomFormItem>
 
-              <CustomFormItem required label="Sexo" name="SEXO">
+              <CustomFormItem required label="Sexo" name="sexo">
                 <CustomRadioGroup
                   disabled={view}
                   options={[
@@ -116,7 +115,7 @@ function GeneralEntityForm({ edit, view, form }: PropsInterface) {
                   ]}
                 />
               </CustomFormItem>
-              <CustomFormItem required label="Estado Civil" name="ESTADO_CIVIL">
+              <CustomFormItem required label="Estado Civil" name="estado_civil">
                 <CustomSelect
                   disabled={view}
                   options={EstadoCivil.map((estado) => ({
@@ -127,145 +126,147 @@ function GeneralEntityForm({ edit, view, form }: PropsInterface) {
               </CustomFormItem>
             </>
           )}
-          <CustomFormItem label="Teléfono" name="TELEFONO">
+          <CustomFormItem label="Teléfono" name="telefono">
             <CustomInput readOnly={view} />
           </CustomFormItem>
-          <CustomFormItem type="email" label="Correo Electrónico" name="EMAIL">
+          <CustomFormItem type="email" label="Correo Electrónico" name="email">
             <CustomInput readOnly={view} />
           </CustomFormItem>
         </Col>
         <Col xs={24} md={10}>
           <CustomFormItem
-            required={!tipoClientEmpresa}
-            label={`Fecha ${tipoClientEmpresa ? 'Creación' : 'Nacimiento'}`}
-            name="FECHA_NACIMIENTO"
+            required={!isEmpresa}
+            label={`Fecha ${isEmpresa ? 'Creación' : 'Nacimiento'}`}
+            name="fecha_nacimiento"
           >
             <CustomInputDate readOnly={view} disabledWeather="FUTURE" />
           </CustomFormItem>
-          <CustomFormItem required label="Nacionalidad" name="ID_PAIS">
+          <CustomFormItem required label="Nacionalidad" name="id_pais">
             <CustomSelect
               options={paises?.map((pais: PaisDto) => ({
-                label: pais?.NACIONALIDAD,
-                value: pais?.ID,
+                label: pais?.nacionalidad,
+                value: pais?.id,
               }))}
             />
           </CustomFormItem>
-          <CustomFormItem required label="Provincia" name="ID_PROVINCIA">
+          <CustomFormItem required label="Provincia" name="id_provincia">
             <CustomSelect
               disabled={view}
-              onChange={(value) => {
-                setProvinceSelected(value)
-                form?.resetFields(['ID_MUNICIPIO', 'ID_CIUDAD'])
+              onChange={() => {
+                form?.resetFields(['id_municipio', 'id_ciudad'])
               }}
               options={provinces?.map((prov: ProvinciaDto) => ({
-                label: prov?.NOMBRE,
-                value: prov?.ID,
+                label: prov?.nombre,
+                value: prov?.id,
               }))}
             />
           </CustomFormItem>
-          <CustomFormItem required label="Ciudad" name="ID_MUNICIPIO">
+          <CustomFormItem required label="Ciudad" name="id_municipio">
             <CustomSelect
               disabled={view}
-              onChange={(value) => {
-                setCiudadSelected(value)
-                form?.resetFields(['ID_CIUDAD'])
+              onChange={() => {
+                form?.resetFields(['id_ciudad'])
               }}
               options={municipios
                 ?.filter(
-                  (municip) => municip?.ID_PROVINCIA === provinceSelected,
+                  (municip) => municip?.id_provincia === watchIdProvincia,
                 )
                 ?.map((municip: MunicipioDto) => ({
-                  label: municip?.NOMBRE,
-                  value: municip?.ID,
+                  label: municip?.nombre,
+                  value: municip?.id,
                 }))}
             />
           </CustomFormItem>
-          <CustomFormItem label="Sector" name="ID_CIUDAD">
+          <CustomFormItem label="Sector" name="id_ciudad">
             <CustomSelect
               disabled={view}
               options={Sectors?.filter(
-                (sector) => sector?.ID_MUNICIPIO === ciudadSelected,
+                (sector) => sector?.id_municipio === watchIdMunicipio,
               )?.map((sector: CiudadDto) => ({
-                label: sector?.NOMBRE,
-                value: sector?.ID,
+                label: sector?.nombre,
+                value: sector?.id,
               }))}
             />
           </CustomFormItem>
-          <CustomFormItem label="Detalles Direccion" name="DESC_DIRECCION">
+          <CustomFormItem label="Detalles Direccion" name="desc_direccion">
             <CustomInput.TextArea readOnly={view} />
           </CustomFormItem>
         </Col>
-        <Divider orientation="left">
-          {`${!tipoClientEmpresa ? 'Ocupación /' : ''}Ingresos`}
-        </Divider>
-        {!tipoClientEmpresa && (
-          <Col xs={24} md={10}>
-            <CustomFormItem required label="Tipo de Empleo" name="TIPO_EMPLEO">
-              <CustomSelect
-                disabled={view}
-                options={TipoEmpleo.map((tipo) => ({
-                  label: tipo.descripcion,
-                  value: tipo.valor,
-                }))}
-              />
-            </CustomFormItem>
-            <CustomFormItem label="Ocupación" name="OCUPACION">
-              <CustomInput readOnly={view} />
-            </CustomFormItem>
-            <CustomFormItem
-              label="Lugar de Trabajo"
-              name="NOMBRE_EMPRESA_TRABAJO"
-            >
-              <CustomInput readOnly={view} />
-            </CustomFormItem>
-            <CustomFormItem
-              label="Posición de desempeño"
-              name="POSICION_EMPRESA"
-            >
-              <CustomInput readOnly={view} />
-            </CustomFormItem>
-          </Col>
-        )}
-        <Col xs={24} md={10}>
-          <CustomFormItem required label="Moneda ingreso" name="MONEDA_INGRESO">
-            <CustomRadioGroup
-              block
-              optionType="button"
-              buttonStyle="solid"
-              onChange={(value) => setCoinIngres(value.target.value)}
-              disabled={view}
-              options={[
-                { label: Moneda.Peso, value: Moneda.Peso },
-                { label: Moneda.Dolar, value: Moneda.Dolar },
-                { label: Moneda.Euro, value: Moneda.Euro },
-              ]}
-            />
-          </CustomFormItem>
-          <CustomFormItem required label="Ingresos" name="INGRESO_PROMEDIO">
-            <CustomInputNumber
-              readOnly={view}
-              disabled={!coinIngres}
-              addonBefore={`${coinIngres} $`}
-            />
-          </CustomFormItem>
-          {!tipoClientEmpresa && (
-            <>
-              <CustomFormItem label="Otros Ingresos" name="OTRO_INGRESO">
-                <CustomInputNumber
-                  readOnly={view}
-                  disabled={!coinIngres}
-                  addonBefore={`${coinIngres} $`}
+
+        {!isProvider && (
+          <>
+            <Divider orientation="left">
+              {`${!isEmpresa ? 'Ocupación /' : ''}Ingresos`}
+            </Divider>
+            {!isEmpresa && (
+              <Col xs={24} md={10}>
+                <CustomFormItem required label="Tipo de Empleo" name="tipo_empleo">
+                  <CustomSelect
+                    disabled={view}
+                    options={TipoEmpleo.map((tipo) => ({
+                      label: tipo.descripcion,
+                      value: tipo.valor,
+                    }))}
+                  />
+                </CustomFormItem>
+                <CustomFormItem label="Ocupación" name="ocupacion">
+                  <CustomInput readOnly={view} />
+                </CustomFormItem>
+                <CustomFormItem
+                  label="Lugar de Trabajo"
+                  name="nombre_empresa_trabajo"
+                >
+                  <CustomInput readOnly={view} />
+                </CustomFormItem>
+                <CustomFormItem
+                  label="Posición de desempeño"
+                  name="posicion_empresa"
+                >
+                  <CustomInput readOnly={view} />
+                </CustomFormItem>
+              </Col>
+            )}
+            <Col xs={24} md={10}>
+              <CustomFormItem required label="Moneda ingreso" name="moneda_ingreso">
+                <CustomRadioGroup
+                  block
+                  optionType="button"
+                  buttonStyle="solid"
+                  disabled={view}
+                  options={[
+                    { label: Moneda.Peso, value: Moneda.Peso },
+                    { label: Moneda.Dolar, value: Moneda.Dolar },
+                    { label: Moneda.Euro, value: Moneda.Euro },
+                  ]}
                 />
               </CustomFormItem>
-              <CustomFormItem
-                label="Detalles de Otros Ingresos"
-                name="RAZON_OTRO_INGRESO"
-              >
-                <CustomInput.TextArea readOnly={view} disabled={!coinIngres} />
+              <CustomFormItem required label="Ingresos" name="ingreso_promedio">
+                <CustomInputNumber
+                  readOnly={view}
+                  disabled={!coinLabel}
+                  addonBefore={`${coinLabel} $`}
+                />
               </CustomFormItem>
-            </>
-          )}
-        </Col>
+              {!isEmpresa && (
+                <>
+                  <CustomFormItem label="Otros Ingresos" name="otro_ingreso">
+                    <CustomInputNumber
+                      readOnly={view}
+                      disabled={!coinLabel}
+                      addonBefore={`${coinLabel} $`}
+                    />
+                  </CustomFormItem>
+                  <CustomFormItem
+                    label="Detalles de Otros Ingresos"
+                    name="razon_otro_ingreso"
+                  >
+                    <CustomInput.TextArea readOnly={view} disabled={!coinLabel} />
+                  </CustomFormItem>
+                </>
+              )}
+            </Col>
+          </>
+        )}
       </Row>
     </>
   )

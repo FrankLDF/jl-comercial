@@ -15,8 +15,8 @@ import NotFaundPage from '../layout/NotFaundPage'
 import { Login } from '../features/auth/pages/Login'
 import { RegisterClient } from '../features/client/page/RegisterClient'
 import ConsulClient from '../features/client/page/ConsulClient'
-import ConsulProveedor from '../features/provider/pages/ConsultProv'
-import { RegisterProv } from '../features/provider/pages/RegisterProv'
+import ConsulProvider from '../features/provider/pages/ConsulProvider'
+import RegisterProvider from '../features/provider/pages/RegisterProvider'
 
 const AppRoutes = () => {
   return (
@@ -57,7 +57,7 @@ const AppRoutes = () => {
         path={PATH_CONSULT_PROVEEDOR}
         element={
           <PrivateRoutes>
-            <ConsulProveedor />
+            <ConsulProvider />
           </PrivateRoutes>
         }
       />
@@ -65,7 +65,7 @@ const AppRoutes = () => {
         path={PATH_REGISTER_PROVEEDOR}
         element={
           <PrivateRoutes>
-            <RegisterProv />
+            <RegisterProvider />
           </PrivateRoutes>
         }
       />

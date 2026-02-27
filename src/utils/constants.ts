@@ -50,7 +50,7 @@ export const TipoDocIdent = {
   Pasaporte: 3,
 }
 
-export const NameTipoDocIdent = {
+export const NameTipoDocIdent: Record<number, string> = {
   1: 'Cedula',
   2: 'Rnc',
   3: 'Pasaporte',

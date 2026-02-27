@@ -1,74 +1,75 @@
 export interface PaisDto {
-  ID: string
-  NOMBRE: string
-  NACIONALIDAD: string
-  ESTADO: string
-  FECHA_INSERCION: Date
-  USUARIO_INSERCION: string
-  FECHA_ACTUALIZACION?: Date
-  USUARIO_ACTUALIZACION?: string
+  id: string
+  nombre: string
+  nacionalidad: string
+  estado: string
+  fecha_insercion: Date
+  usuario_insercion: string
+  fecha_actualizacion?: Date
+  usuario_actualizacion?: string
 }
 
 export interface ProvinciaDto {
-  ID: number
-  ID_PAIS: string
-  NOMBRE: string
-  ESTADO: string
-  FECHA_INSERCION: Date
-  USUARIO_INSERCION: string
-  FECHA_ACTUALIZACION?: Date
-  USUARIO_ACTUALIZACION?: string
+  id: number
+  id_pais: string
+  nombre: string
+  estado: string
+  fecha_insercion: Date
+  usuario_insercion: string
+  fecha_actualizacion?: Date
+  usuario_actualizacion?: string
 }
 
 export interface MunicipioDto {
-  ID: number
-  ID_PROVINCIA: number
-  NOMBRE: string
-  ESTADO: string
-  FECHA_INSERCION: Date
-  USUARIO_INSERCION: string
-  FECHA_ACTUALIZACION?: Date
-  USUARIO_ACTUALIZACION?: string
+  id: number
+  id_provincia: number
+  nombre: string
+  estado: string
+  fecha_insercion: Date
+  usuario_insercion: string
+  fecha_actualizacion?: Date
+  usuario_actualizacion?: string
 }
 
 export interface CiudadDto {
-  ID: number
-  ID_MUNICIPIO: number
-  NOMBRE: string
-  ESTADO: string
-  FECHA_INSERCION: Date
-  USUARIO_INSERCION: string
-  FECHA_ACTUALIZACION?: Date
-  USUARIO_ACTUALIZACION?: string
+  id: number
+  id_municipio: number
+  nombre: string
+  estado: string
+  fecha_insercion: Date
+  usuario_insercion: string
+  fecha_actualizacion?: Date
+  usuario_actualizacion?: string
 }
 
 export interface EntidadDto {
-  ID?: number
-  TIPO_ENTIDAD?: string
-  TIPO_DOC_IDENT?: number
-  DOCUMENTO_IDENT?: string
-  NOMBRES?: string
-  APELLIDOS?: string
-  SEXO?: string
-  ESTADO_CIVIL?: string
-  TELEFONO?: string
-  TIPO_EMPELO?: string
-  NOMBRE_EMPRESA_TRABAJO?: string
-  OCUPACION?: string
-  POSICION_EMPRESA?: string
-  MONEDA_INGRESO?: string
-  INGRESO_PROMEDIO?: string
-  OTRO_INGRESO?: string
-  RAZON_OTRO_INGRESO?: string
-  EMAIL?: string
-  ID_PAIS?: string
-  ID_PROVINCIA?: number
-  ID_MUNICIPIO?: number
-  ID_CIUDAD?: number
-  FECHA_NACIMIENTO?: Date
-  ESTADO?: string
-  FECHA_INSERCION?: Date
-  USUARIO_INSERCION?: string
-  FECHA_ACTUALIZACION?: Date
-  USUARIO_ACTUALIZACION?: string
+  id?: number
+  tipo_entidad?: string
+  tipo_doc_ident?: number
+  documento_ident?: string
+  nombres?: string
+  apellidos?: string
+  sexo?: string
+  estado_civil?: string
+  telefono?: string
+  tipo_empleo?: string
+  nombre_empresa_trabajo?: string
+  ocupacion?: string
+  posicion_empresa?: string
+  moneda_ingreso?: string
+  ingreso_promedio?: string
+  otro_ingreso?: string
+  razon_otro_ingreso?: string
+  email?: string
+  id_pais?: string
+  id_provincia?: number
+  id_municipio?: number
+  id_ciudad?: number
+  desc_direccion?: string
+  fecha_nacimiento?: Date
+  estado?: string
+  fecha_insercion?: Date
+  usuario_insercion?: string
+  fecha_actualizacion?: Date
+  usuario_actualizacion?: string
 }

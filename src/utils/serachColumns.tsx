@@ -11,7 +11,7 @@ export const getColumnSearchProps = (dataIndex, columnTitle = '') => {
       selectedKeys,
       confirm,
       clearFilters,
-    }) => (
+    }: any) => (
       <div style={{ padding: 8 }}>
         <CustomInput
           placeholder={`Buscar ${columnTitle || dataIndex}`}

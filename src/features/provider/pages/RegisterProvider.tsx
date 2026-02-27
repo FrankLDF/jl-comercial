@@ -9,68 +9,68 @@ import GeneralEntityForm from '../../general/components/GeneralEntityForm'
 import { CustomButton } from '../../../components/Button/CustomButton'
 import { Form, Row } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { ClientDto } from '../dto-clientDto'
 import { useCustomMutation } from '../../../hooks/UseCustomMutation'
-import clientService from '../services/clientService'
+import providerService from '../services/providerService'
 import { showNotification } from '../../../utils/showNotification'
 import { showHandleError } from '../../../utils/handleError'
 import { useEffect } from 'react'
-import { PATH_CONSULT_CLIENT } from '../../../routes/pathts'
+import { PATH_CONSULT_PROVEEDOR } from '../../../routes/pathts'
+import type { ProviderDto } from '../dto-providerDto'
 
-export const RegisterClient = () => {
+export const RegisterProvider = () => {
   const [form] = Form.useForm()
   const location = useLocation()
   const navigate = useNavigate()
 
   const { state } = location
-  const { clientData, onlyView, edit } = state || {}
+  const { providerData, onlyView, edit } = state || {}
 
   useEffect(() => {
-    if (clientData) {
-      const { entidad, ...clientInfo } = clientData || {}
-      form.setFieldsValue({ ...entidad, ...clientInfo })
+    if (providerData) {
+      const { entidad, ...providerInfo } = providerData || {}
+      form.setFieldsValue({ ...entidad, ...providerInfo })
     }
-  }, [clientData, form])
+  }, [providerData, form])
 
-  const { mutate: upsertClient, isPending } = useCustomMutation({
-    execute: clientService.upsertClient,
+  const { mutate: upsertProvider, isPending } = useCustomMutation({
+    execute: providerService.upsertProvider,
     onSuccess: () => {
       showNotification({
         type: 'success',
-        message: `Cliente ${edit ? 'actualizado' : 'creado'} correctamente`,
+        message: `Proveedor ${edit ? 'actualizado' : 'creado'} correctamente`,
       })
       form.resetFields()
-      navigate(PATH_CONSULT_CLIENT)
+      navigate(PATH_CONSULT_PROVEEDOR)
     },
     onError: (e) => showHandleError(e as never),
   })
 
-  const handleSave = (data: ClientDto) => {
+  const handleSave = (data: ProviderDto) => {
     const payload = deleteNullValues({
-      id: clientData?.id,
+      id: providerData?.id,
       estado: EstadoGeneral.ACTIVO,
       entidad: {
         ...data,
-        id: clientData?.entidad?.id,
+        id: providerData?.entidad?.id,
         estado: EstadoGeneral.ACTIVO,
       },
     })
 
-    upsertClient(payload as ClientDto)
+    upsertProvider(payload as ProviderDto)
   }
 
   const handleCancel = () => {
     form.resetFields()
-    if (clientData) {
-      const { entidad, ...clientInfo } = clientData || {}
-      form.setFieldsValue({ ...entidad, ...clientInfo })
+    if (providerData) {
+      const { entidad, ...providerInfo } = providerData || {}
+      form.setFieldsValue({ ...entidad, ...providerInfo })
     }
   }
 
   return (
     <>
       <CustomTitle level={2}>
-        {onlyView ? 'Detalles del' : edit ? 'Editar' : 'Registrar'} Cliente
+        {onlyView ? 'Detalles del' : edit ? 'Editar' : 'Registrar'} Proveedor
       </CustomTitle>
       <CustomForm
         form={form}
@@ -79,7 +79,12 @@ export const RegisterClient = () => {
         labelWrap
         {...formItemLayout}
       >
-        <GeneralEntityForm view={onlyView} form={form} />
+        <GeneralEntityForm
+          view={onlyView}
+          form={form}
+          edit={edit}
+          isProvider={true}
+        />
 
         <Row justify={'end'}>
           <CustomButton onClick={() => navigate(-1)} type="default">
@@ -100,3 +105,5 @@ export const RegisterClient = () => {
     </>
   )
 }
+
+export default RegisterProvider

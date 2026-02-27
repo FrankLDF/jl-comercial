@@ -3,13 +3,13 @@ import CustomTable from '../../../components/table/CustomTable'
 import { CustomTitle } from '../../../components/tittle/CustomTittle'
 import { useCustomMutation } from '../../../hooks/UseCustomMutation'
 import { showHandleError } from '../../../utils/handleError'
-import clientService from '../services/clientService'
-import type { ClientDto } from '../dto-clientDto'
+import providerService from '../services/providerService'
+import type { ProviderDto } from '../dto-providerDto'
 import { NameTipoDocIdent } from '../../../utils/constants'
 import { DatePicker, Popconfirm, Row, Space } from 'antd'
 import { CustomButton } from '../../../components/Button/CustomButton'
 import { useNavigate } from 'react-router-dom'
-import { PATH_REGISTER_CLIENT } from '../../../routes/pathts'
+import { PATH_REGISTER_PROVEEDOR } from '../../../routes/pathts'
 import CustomIcons from '../../../components/icons/CustomIcon'
 import CustomTooltip from '../../../components/tooltip/CustomTooltip'
 import { getColumnSearchProps } from '../../../utils/serachColumns'
@@ -17,35 +17,35 @@ import { showNotification } from '../../../utils/showNotification'
 
 const { RangePicker } = DatePicker
 
-const ConsulClient = () => {
+const ConsulProvider = () => {
   const navigate = useNavigate()
   const [dataSource, setDataSource] = useState()
   const [filters, setFilters] = useState<any>({})
 
   const {
-    mutate: getClients,
+    mutate: getProviders,
     isPending,
     data,
   } = useCustomMutation({
-    execute: clientService.getClient,
+    execute: providerService.getProvider,
     onError: (e) => showHandleError(e as never),
   })
 
-  const { mutate: deleteClient } = useCustomMutation({
-    execute: clientService.softDeleteClient,
+  const { mutate: deleteProvider } = useCustomMutation({
+    execute: providerService.softDeleteProvider,
     onSuccess: () => {
       showNotification({
         type: 'success',
-        message: 'Cliente eliminado correctamente',
+        message: 'Proveedor eliminado correctamente',
       })
-      getClients({ estado: 'A', ...filters })
+      getProviders({ estado: 'A', ...filters })
     },
     onError: (e) => showHandleError(e as never),
   })
 
   useEffect(() => {
-    getClients({ estado: 'A', ...filters })
-  }, [getClients, filters])
+    getProviders({ estado: 'A', ...filters })
+  }, [getProviders, filters])
 
   useEffect(() => {
     if (data?.data) {
@@ -76,7 +76,7 @@ const ConsulClient = () => {
         const tipoDoc = NameTipoDocIdent[normalizedEntidad?.tipo_doc_ident || 0]
         return {
           ...normalizedItem,
-          nombre_cliente:
+          nombre_proveedor:
             (normalizedEntidad?.nombres || '') + 
             ' ' + 
             (normalizedEntidad?.apellidos || ''),
@@ -127,8 +127,8 @@ const ConsulClient = () => {
     },
     {
       title: 'Nombre',
-      dataIndex: 'nombre_cliente',
-      ...getColumnSearchProps('nombre_cliente', 'Nombre'),
+      dataIndex: 'nombre_proveedor',
+      ...getColumnSearchProps('nombre_proveedor', 'Nombre'),
     },
     {
       title: 'Fecha de Registro',
@@ -140,15 +140,15 @@ const ConsulClient = () => {
     },
     {
       title: 'Acciones',
-      render: (record: ClientDto) => {
+      render: (record: ProviderDto) => {
         return (
           <Space size="middle">
             <CustomTooltip title="Ver Detalles">
               <CustomIcons.FileSearchOutlined
                 style={{ cursor: 'pointer', color: '#1890ff' }}
                 onClick={() => {
-                  navigate(PATH_REGISTER_CLIENT, {
-                    state: { clientData: record, onlyView: true },
+                  navigate(PATH_REGISTER_PROVEEDOR, {
+                    state: { providerData: record, onlyView: true },
                   })
                 }}
               />
@@ -157,16 +157,16 @@ const ConsulClient = () => {
               <CustomIcons.FormOutlined
                 style={{ cursor: 'pointer', color: '#faad14' }}
                 onClick={() => {
-                  navigate(PATH_REGISTER_CLIENT, {
-                    state: { clientData: record, edit: true },
+                  navigate(PATH_REGISTER_PROVEEDOR, {
+                    state: { providerData: record, edit: true },
                   })
                 }}
               />
             </CustomTooltip>
             <CustomTooltip title="Eliminar">
               <Popconfirm
-                title="¿Estás seguro de eliminar este cliente?"
-                onConfirm={() => deleteClient(record.id!)}
+                title="¿Estás seguro de eliminar este proveedor?"
+                onConfirm={() => deleteProvider(record.id!)}
                 okText="Sí"
                 cancelText="No"
               >
@@ -183,16 +183,16 @@ const ConsulClient = () => {
   const title = () => (
     <>
       <Row justify={'space-between'} align="middle">
-        <CustomTitle level={4}>Clientes Registrados</CustomTitle>
+        <CustomTitle level={4}>Proveedores Registrados</CustomTitle>
         <Space>
            <RangePicker onChange={handleDateChange} />
           <CustomButton
             icon={<CustomIcons.UserAddOutlined />}
-            onClick={() => navigate(PATH_REGISTER_CLIENT)}
+            onClick={() => navigate(PATH_REGISTER_PROVEEDOR)}
             size="small"
             type="primary"
           >
-            Agregar Cliente
+            Agregar Proveedor
           </CustomButton>
         </Space>
       </Row>
@@ -200,9 +200,9 @@ const ConsulClient = () => {
   )
   return (
     <>
-      <CustomTitle level={2}>Consulta de Clientes</CustomTitle>
+      <CustomTitle level={2}>Consulta de Proveedores</CustomTitle>
       <CustomTable
-        rowKey={(record: ClientDto) => record.id ?? ''}
+        rowKey={(record: ProviderDto) => record.id ?? ''}
         title={title}
         columns={columns}
         dataSource={dataSource}
@@ -212,4 +212,4 @@ const ConsulClient = () => {
   )
 }
 
-export default ConsulClient
+export default ConsulProvider

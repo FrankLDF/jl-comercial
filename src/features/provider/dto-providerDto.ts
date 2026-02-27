@@ -1,7 +1,6 @@
 import type { EntidadDto } from '../general/dto/generalDto'
 
-// export interface ClientDto extends EntidadDto {
-export interface ClientDto {
+export interface ProviderDto {
   id?: number
   id_entidad?: number
   estado?: string
