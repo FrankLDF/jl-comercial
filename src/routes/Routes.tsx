@@ -1,14 +1,4 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import {
-  PATH_CONSULT_CLIENT,
-  PATH_CONSULT_PROVEEDOR,
-  PATH_INICIAL,
-  PATH_LOGIN,
-  PATH_MAIN,
-  PATH_NOT_FOUND,
-  PATH_REGISTER_CLIENT,
-  PATH_REGISTER_PROVEEDOR,
-} from './pathts'
 import PublicRoutes from './PublicRoutes'
 import PrivateRoutes from './PrivateRoutes'
 import NotFaundPage from '../layout/NotFaundPage'
@@ -17,6 +7,24 @@ import { RegisterClient } from '../features/client/page/RegisterClient'
 import ConsulClient from '../features/client/page/ConsulClient'
 import ConsulProvider from '../features/provider/pages/ConsulProvider'
 import RegisterProvider from '../features/provider/pages/RegisterProvider'
+import ConsulRecepcion from '../features/reception/pages/ConsulRecepcion'
+import RegisterRecepcion from '../features/reception/pages/RegisterRecepcion'
+import ViewRecepcion from '../features/reception/pages/ViewRecepcion'
+import ConsulInventario from '../features/inventario/pages/ConsulInventario'
+import {
+  PATH_CONSULT_CLIENT,
+  PATH_CONSULT_INVENTARIO,
+  PATH_CONSULT_PROVEEDOR,
+  PATH_CONSULT_RECEPCION,
+  PATH_INICIAL,
+  PATH_LOGIN,
+  PATH_MAIN,
+  PATH_NOT_FOUND,
+  PATH_REGISTER_CLIENT,
+  PATH_REGISTER_PROVEEDOR,
+  PATH_REGISTER_RECEPCION,
+  PATH_VIEW_RECEPCION,
+} from './pathts'
 
 const AppRoutes = () => {
   return (
@@ -66,6 +74,38 @@ const AppRoutes = () => {
         element={
           <PrivateRoutes>
             <RegisterProvider />
+          </PrivateRoutes>
+        }
+      />
+      <Route
+        path={PATH_CONSULT_RECEPCION}
+        element={
+          <PrivateRoutes>
+            <ConsulRecepcion />
+          </PrivateRoutes>
+        }
+      />
+      <Route
+        path={PATH_REGISTER_RECEPCION}
+        element={
+          <PrivateRoutes>
+            <RegisterRecepcion />
+          </PrivateRoutes>
+        }
+      />
+      <Route
+        path={PATH_VIEW_RECEPCION}
+        element={
+          <PrivateRoutes>
+            <ViewRecepcion />
+          </PrivateRoutes>
+        }
+      />
+      <Route
+        path={PATH_CONSULT_INVENTARIO}
+        element={
+          <PrivateRoutes>
+            <ConsulInventario />
           </PrivateRoutes>
         }
       />

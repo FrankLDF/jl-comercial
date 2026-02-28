@@ -8,6 +8,7 @@ import {
   FileSearchOutlined,
   UserAddOutlined,
   FormOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons'
 
 const CustomIcons = {
@@ -20,6 +21,7 @@ const CustomIcons = {
   SearchOutlined,
   HomeOutlined,
   FileSearchOutlined,
+  ReloadOutlined,
 }
 
 export default CustomIcons

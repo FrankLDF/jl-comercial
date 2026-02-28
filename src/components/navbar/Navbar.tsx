@@ -10,8 +10,8 @@ import { inventory } from '../../features/inventario/menu/inventory'
 
 export const Navbar = () => {
   const navigate = useNavigate()
-  const { rols } = getSessionInfo()
-  const userRoles = rols || []
+  const session = getSessionInfo() || {}
+  const userRoles = session.rols || []
 
   const handleClick: MenuProps['onClick'] = (e) => navigate(e.key)
 

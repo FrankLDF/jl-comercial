@@ -41,7 +41,6 @@ export const Moneda = {
 export const EstadoGeneral = {
   ACTIVO: 'A',
   INACTIVO: 'I',
-  Euro: 'EUR',
 }
 
 export const TipoDocIdent = {

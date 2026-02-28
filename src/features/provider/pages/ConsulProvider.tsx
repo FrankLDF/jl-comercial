@@ -5,8 +5,8 @@ import { useCustomMutation } from '../../../hooks/UseCustomMutation'
 import { showHandleError } from '../../../utils/handleError'
 import providerService from '../services/providerService'
 import type { ProviderDto } from '../dto-providerDto'
-import { NameTipoDocIdent } from '../../../utils/constants'
-import { DatePicker, Popconfirm, Row, Space } from 'antd'
+import { NameTipoDocIdent, EstadoGeneral } from '../../../utils/constants'
+import { DatePicker, Popconfirm, Row, Space, Tag } from 'antd'
 import { CustomButton } from '../../../components/Button/CustomButton'
 import { useNavigate } from 'react-router-dom'
 import { PATH_REGISTER_PROVEEDOR } from '../../../routes/pathts'
@@ -20,7 +20,7 @@ const { RangePicker } = DatePicker
 const ConsulProvider = () => {
   const navigate = useNavigate()
   const [dataSource, setDataSource] = useState()
-  const [filters, setFilters] = useState<any>({})
+  const [filters, setFilters] = useState<any>({ estado: 'A' })
 
   const {
     mutate: getProviders,
@@ -44,7 +44,7 @@ const ConsulProvider = () => {
   })
 
   useEffect(() => {
-    getProviders({ estado: 'A', ...filters })
+    getProviders({ ...filters })
   }, [getProviders, filters])
 
   useEffect(() => {
@@ -100,6 +100,18 @@ const ConsulProvider = () => {
     }
   }
 
+  const handleTableChange = (_pagination: any, filtersTable: any) => {
+    if (filtersTable.estado) {
+      setFilters((prev: any) => ({
+        ...prev,
+        estado: filtersTable.estado[0],
+      }))
+    } else {
+      const { estado, ...rest } = filters
+      setFilters(rest)
+    }
+  }
+
   const columns = [
     {
       title: 'Código',
@@ -137,6 +149,23 @@ const ConsulProvider = () => {
       sorter: (a: any, b: any) =>
         new Date(a.fecha_insercion).getTime() -
         new Date(b.fecha_insercion).getTime(),
+    },
+    {
+      title: 'Estado',
+      dataIndex: 'estado',
+      key: 'estado',
+      width: '100px',
+      render: (estado: string) => (
+        <Tag color={estado === EstadoGeneral.ACTIVO ? 'green' : 'red'}>
+          {estado === EstadoGeneral.ACTIVO ? 'A' : 'I'}
+        </Tag>
+      ),
+      filters: [
+        { text: 'Activo (A)', value: EstadoGeneral.ACTIVO },
+        { text: 'Inactivo (I)', value: EstadoGeneral.INACTIVO },
+      ],
+      filteredValue: filters.estado ? [filters.estado] : null,
+      filterMultiple: false,
     },
     {
       title: 'Acciones',
@@ -207,6 +236,7 @@ const ConsulProvider = () => {
         columns={columns}
         dataSource={dataSource}
         loading={isPending}
+        onChange={handleTableChange}
       />
     </>
   )
