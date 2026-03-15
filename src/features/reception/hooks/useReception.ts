@@ -41,9 +41,9 @@ export const useReception = () => {
   })
 
   const createMutation = useCustomMutation({
-    execute: (data: any) => 
-      data.id 
-        ? receptionService.updateReception(data) 
+    execute: (data: any) =>
+      data.id
+        ? receptionService.updateReception(data)
         : receptionService.createReception(data),
     onSuccess: (_, variables) => {
       showNotification({
@@ -52,11 +52,16 @@ export const useReception = () => {
       })
       navigate(PATH_CONSULT_RECEPCION)
     },
-    onError: (e) => showHandleError(e as never),
+    onError: () =>
+      showNotification({
+        type: 'error',
+        message:
+          'Error al guardar la recepción. Por favor, inténtalo de nuevo.',
+      }),
   })
 
   const closeMutation = useCustomMutation({
-    execute: (args: { id: number; usuario: string }) => 
+    execute: (args: { id: number; usuario: string }) =>
       receptionService.closeReception(args.id, args.usuario),
     onSuccess: () => {
       showNotification({
@@ -80,19 +85,23 @@ export const useReception = () => {
 
   return {
     getMarcas: marcasMutation.mutate,
-    marcas: marcasMutation.data?.data?.brands || marcasMutation.data?.brands || [],
+    marcas:
+      marcasMutation.data?.data?.brands || marcasMutation.data?.brands || [],
     isPendingMarcas: marcasMutation.isPending,
 
     getModelos: modelosMutation.mutate,
-    modelos: modelosMutation.data?.data?.models || modelosMutation.data?.models || [],
+    modelos:
+      modelosMutation.data?.data?.models || modelosMutation.data?.models || [],
     isPendingModelos: modelosMutation.isPending,
 
     getEstilos: estilosMutation.mutate,
-    estilos: estilosMutation.data?.data?.styles || estilosMutation.data?.styles || [],
+    estilos:
+      estilosMutation.data?.data?.styles || estilosMutation.data?.styles || [],
     isPendingEstilos: estilosMutation.isPending,
 
     getColores: coloresMutation.mutate,
-    colores: coloresMutation.data?.data?.colors || coloresMutation.data?.colors || [],
+    colores:
+      coloresMutation.data?.data?.colors || coloresMutation.data?.colors || [],
     isPendingColores: coloresMutation.isPending,
 
     getReceptions: listMutation.mutate,

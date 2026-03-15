@@ -26,7 +26,13 @@ let isHandling401 = false
 
 export const setupInterceptors = (logout: () => void) => {
   serverCore.interceptors.response.use(
-    (res) => res,
+    (res) => {
+      // Si el backend devuelve success: false incluso con status 200/201, lo tratamos como error
+      if (res.data && res.data.success === false) {
+        return Promise.reject(res.data)
+      }
+      return res
+    },
     async (err) => {
       const currentPath = window.location.pathname
       const isLoginPage = currentPath === PATH_LOGIN

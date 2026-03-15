@@ -7,6 +7,7 @@ import { client } from '../../features/client/menu/client'
 import { filterMenuItemsByRole } from '../../utils/filterMenuByRol'
 import { provider } from '../../features/provider/menu/provider'
 import { inventory } from '../../features/inventario/menu/inventory'
+import { venta } from '../../features/venta/menu/venta'
 
 export const Navbar = () => {
   const navigate = useNavigate()
@@ -15,7 +16,7 @@ export const Navbar = () => {
 
   const handleClick: MenuProps['onClick'] = (e) => navigate(e.key)
 
-  const items: AppMenuItem[] = [client, provider, inventory]
+  const items: AppMenuItem[] = [client, provider, inventory, venta]
   const filteredItems: AppMenuItem[] = filterMenuItemsByRole(
     items as never,
     userRoles

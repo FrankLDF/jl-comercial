@@ -9,6 +9,7 @@ import {
   UserAddOutlined,
   FormOutlined,
   ReloadOutlined,
+  PlusCircleOutlined,
 } from '@ant-design/icons'
 
 const CustomIcons = {
@@ -22,6 +23,7 @@ const CustomIcons = {
   HomeOutlined,
   FileSearchOutlined,
   ReloadOutlined,
+  PlusCircleOutlined,
 }
 
 export default CustomIcons
