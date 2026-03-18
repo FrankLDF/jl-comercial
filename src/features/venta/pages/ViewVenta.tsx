@@ -12,7 +12,15 @@ import {
   Space,
   Popconfirm,
   Typography,
+  Tooltip,
+  Col,
 } from 'antd'
+import { 
+  PrinterOutlined, 
+  FilePdfOutlined, 
+  EyeOutlined,
+  ArrowLeftOutlined 
+} from '@ant-design/icons'
 import { CustomTitle } from '../../../components/tittle/CustomTittle'
 import { CustomButton } from '../../../components/Button/CustomButton'
 import { useCustomMutation } from '../../../hooks/UseCustomMutation'
@@ -22,8 +30,10 @@ import { PATH_CONSULT_VENTA } from '../../../routes/pathts'
 import { showNotification } from '../../../utils/showNotification'
 import { showHandleError } from '../../../utils/handleError'
 import PagoForm from '../components/PagoForm'
+import DocumentPreviewModal from '../components/DocumentPreviewModal'
 
-const { Text } = Typography
+const { Text, Title } = Typography
+const API_BASE_URL = import.meta.env.VITE_SERVER_CORE_URL
 
 const ViewVenta = () => {
   const location = useLocation()
@@ -35,6 +45,9 @@ const ViewVenta = () => {
   const [modelos, setModelos] = useState<any[]>([])
   const [colores, setColores] = useState<any[]>([])
   const [estilos, setEstilos] = useState<any[]>([])
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewTitle, setPreviewTitle] = useState('')
 
   const {
     mutate: getVenta,
@@ -120,12 +133,39 @@ const ViewVenta = () => {
   const isCancelable = (venta.estado_venta || venta.estado) === 'ACTIVA'
   const canPay = (venta.estado_venta || venta.estado) === 'ACTIVA' && venta.saldo_pendiente > 0
 
+  const handlePreview = async (url: string, title: string) => {
+    try {
+      setPreviewTitle(title)
+      setPreviewUrl(null) // Reset to show loading
+      setIsPreviewVisible(true)
+      
+      const blob = await ventaService.getDocument(url)
+      const objectUrl = URL.createObjectURL(blob)
+      setPreviewUrl(objectUrl)
+    } catch (error) {
+      showHandleError(error as never)
+      setIsPreviewVisible(false)
+    }
+  }
+
+  const handlePreviewCancel = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+    setIsPreviewVisible(false)
+    setPreviewUrl(null)
+  }
+
+  const handlePrintReceipt = (url: string) => {
+    window.open(url, '_blank')
+  }
+
   return (
     <>
       <Row justify="space-between" align="middle">
         <CustomTitle level={2}>Detalle de Venta #{venta.id}</CustomTitle>
         <Space>
-          <CustomButton onClick={() => navigate(-1)} type="default">
+          <CustomButton onClick={() => navigate(-1)} icon={<ArrowLeftOutlined />} type="default">
             Atrás
           </CustomButton>
           {canPay && (
@@ -285,6 +325,22 @@ const ViewVenta = () => {
                         </Tag>
                       ),
                     },
+                    {
+                      title: 'Acciones',
+                      key: 'acciones',
+                      render: (_, record) => {
+                        const hasPayments = record.monto_pagado > 0 || record.estado === 'PAGADA'
+                        return hasPayments ? (
+                          <Tooltip title="Imprimir recibo de cuota">
+                            <CustomButton
+                              type="text"
+                              icon={<PrinterOutlined />}
+                              onClick={() => handlePrintReceipt(`${API_BASE_URL}/documents/installments/${record.id}/receipt`)}
+                            />
+                          </Tooltip>
+                        ) : null
+                      }
+                    }
                   ]}
                 />
               ),
@@ -301,10 +357,74 @@ const ViewVenta = () => {
                     { title: 'Monto', dataIndex: 'monto_total', render: (val) => `$${val?.toLocaleString() || '0'}` },
                     { title: 'Método', dataIndex: 'metodo_pago' },
                     { title: 'Usuario', dataIndex: 'usuario_insercion' },
+                    {
+                      title: 'Acciones',
+                      key: 'acciones',
+                      render: (_, record) => (
+                        <Tooltip title="Imprimir recibo de pago">
+                          <CustomButton
+                            type="text"
+                            icon={<PrinterOutlined />}
+                            onClick={() => handlePrintReceipt(`${API_BASE_URL}/documents/payments/${record.id}/receipt`)}
+                          />
+                        </Tooltip>
+                      )
+                    }
                   ]}
                 />
               ),
             },
+            {
+              key: '4',
+              label: 'Documentos',
+              children: (
+                <div style={{ padding: '10px 0' }}>
+                  {(venta.detalles || []).map((detalle: any, index: number) => {
+                    const veh = detalle.vehiculo_ingreso?.vehiculo as any
+                    const brand = veh?.marca_ref?.nombre || veh?.marca?.nombre || marcas.find((m: any) => Number(m.id) === Number(veh?.id_marca))?.nombre || ''
+                    const model = veh?.modelo_ref?.nombre || veh?.modelo?.nombre || modelos.find((m: any) => Number(m.id) === Number(veh?.id_modelo))?.nombre || ''
+                    const vehicleName = `${brand} ${model}`.trim() || `Vehículo ${index + 1}`
+                    const vehicleId = detalle.id_vehiculo_ingreso || veh?.id
+
+                    const documents = [
+                      { title: 'Carta de Ruta', type: 'route-letter' },
+                      { title: 'Acta de Venta', type: 'sale-act' },
+                      { title: 'Carta de Saldo', type: 'balance-letter' },
+                      { title: 'Contrato de Financiamiento', type: 'financing-contract' },
+                    ]
+
+                    return (
+                      <div key={detalle.id} style={{ marginBottom: 32 }}>
+                        <Title level={5} style={{ marginBottom: 16, borderBottom: '1px solid #f0f0f0', paddingBottom: 8 }}>
+                          Vehículo: {vehicleName} {veh?.anio ? `(${veh.anio})` : ''} - Chasis: {veh?.chasis || 'N/A'}
+                        </Title>
+                        <Row gutter={[16, 16]}>
+                          {documents.map((doc) => (
+                            <Col xs={24} sm={12} md={8} lg={6} key={doc.type}>
+                              <Card size="small" hoverable>
+                                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                                  <FilePdfOutlined style={{ fontSize: 32, color: '#ff4d4f', marginBottom: 12 }} />
+                                  <div style={{ fontWeight: 'bold', marginBottom: 12, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {doc.title}
+                                  </div>
+                                  <CustomButton 
+                                    size="small" 
+                                    icon={<EyeOutlined />}
+                                    onClick={() => handlePreview(`documents/vehicles/${vehicleId}/${doc.type}`, doc.title)}
+                                  >
+                                    Ver documento
+                                  </CustomButton>
+                                </div>
+                              </Card>
+                            </Col>
+                          ))}
+                        </Row>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            }
           ]}
         />
       </Card>
@@ -318,6 +438,13 @@ const ViewVenta = () => {
         }}
         idVenta={id}
         saldoPendiente={venta.saldo_pendiente}
+      />
+
+      <DocumentPreviewModal
+        visible={isPreviewVisible}
+        onCancel={handlePreviewCancel}
+        url={previewUrl}
+        title={previewTitle}
       />
     </>
   )

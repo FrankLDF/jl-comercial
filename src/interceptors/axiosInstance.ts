@@ -74,6 +74,8 @@ export const setupInterceptors = (logout: () => void) => {
         })
         return Promise.reject(err)
       }
+      
+      return Promise.reject(err)
     },
   )
 }

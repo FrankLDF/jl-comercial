@@ -33,7 +33,12 @@ class VentaService {
   };
 
   cancelarVenta = async (id: number) => {
-    const res = await serverCore.patch(`/venta/${id}/cancelar`);
+    const res = await serverCore.post(`/venta/${id}/cancelar`);
+    return res.data;
+  };
+
+  getDocument = async (url: string): Promise<Blob> => {
+    const res = await serverCore.get(url, { responseType: 'blob' });
     return res.data;
   };
 }
