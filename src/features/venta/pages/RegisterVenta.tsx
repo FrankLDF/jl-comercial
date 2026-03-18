@@ -10,6 +10,8 @@ import {
   Space,
   Table,
   Typography,
+  Checkbox,
+  Badge,
 } from 'antd'
 import { CustomTitle } from '../../../components/tittle/CustomTittle'
 import { CustomForm } from '../../../components/form/CustomForm'
@@ -22,7 +24,7 @@ import clientService from '../../client/services/clientService'
 import inventarioService from '../../inventario/services/inventarioService'
 import { showNotification } from '../../../utils/showNotification'
 import { showHandleError } from '../../../utils/handleError'
-import type { CreateVentaDto } from '../dto-ventaDto'
+import type { CreateVentaDto, CargoTipoDto } from '../dto-ventaDto'
 
 const { Option } = Select
 const { Text } = Typography
@@ -32,6 +34,8 @@ const RegisterVenta = () => {
   const navigate = useNavigate()
   const [clients, setClients] = useState<any[]>([])
   const [inventory, setInventory] = useState<any[]>([])
+  const [cargoTipos, setCargoTipos] = useState<CargoTipoDto[]>([])
+  const [selectedCargos, setSelectedCargos] = useState<Record<number, { selected: boolean, monto: number }>>({})
   const [loadingLookups, setLoadingLookups] = useState(true)
   const [tipoPago, setTipoPago] = useState<'CONTADO' | 'CREDITO'>('CONTADO')
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
@@ -53,18 +57,21 @@ const RegisterVenta = () => {
   useEffect(() => {
     const fetchLookups = async () => {
       try {
-        const [clientsRes, inventoryRes] = await Promise.all([
+        const [clientsRes, inventoryRes, cargoTiposRes] = await Promise.all([
           clientService.getClient({ estado: 'A' }),
           inventarioService.getInventario({
             estado_ingreso: 'EN_STOCK',
             estado: 'A',
           }),
+          ventaService.getTipoCargos(),
         ])
         const clientsData = Array.isArray(clientsRes) ? clientsRes : clientsRes.data || []
         const inventoryData = Array.isArray(inventoryRes) ? inventoryRes : inventoryRes.data || []
+        const cargoTiposData = cargoTiposRes.data || []
         
         setClients(clientsData)
         setInventory(inventoryData)
+        setCargoTipos(cargoTiposData)
 
         // Initialize edited prices with estimates
         const initialPrices: Record<number, number> = {}
@@ -72,6 +79,13 @@ const RegisterVenta = () => {
           initialPrices[item.id] = item.precio_venta_estimado
         })
         setEditedPrices(initialPrices)
+
+        // Initialize selected charges
+        const initialCargos: Record<number, { selected: boolean, monto: number }> = {}
+        cargoTiposData.forEach((ct) => {
+          initialCargos[ct.id] = { selected: false, monto: ct.monto_sugerido }
+        })
+        setSelectedCargos(initialCargos)
       } catch (error) {
         console.error('Error fetching lookups:', error)
       } finally {
@@ -97,6 +111,12 @@ const RegisterVenta = () => {
         id_vehiculo_ingreso: v.id,
         precio_venta: editedPrices[v.id] || v.precio_venta_estimado,
       })),
+      cargos: Object.entries(selectedCargos)
+        .filter(([_, data]) => data.selected)
+        .map(([id, data]) => ({
+          id_cargo_tipo: Number(id),
+          monto: data.monto,
+        })),
     }
 
     if (values.tipo_pago === 'CREDITO') {
@@ -115,50 +135,59 @@ const RegisterVenta = () => {
     }))
   }
 
-  const columns = [
+  const onCargoSelectedChange = (id: number, selected: boolean) => {
+    setSelectedCargos(prev => ({
+      ...prev,
+      [id]: { ...prev[id], selected }
+    }))
+  }
+
+  const onCargoMontoChange = (id: number, monto: number | null) => {
+    setSelectedCargos(prev => ({
+      ...prev,
+      [id]: { ...prev[id], monto: monto || 0 }
+    }))
+  }
+
+  const cargoColumns = [
     {
-      title: 'Moto',
-      key: 'moto',
-      render: (record: any) => (
-        <Text strong>
-          {record.vehiculo?.marca_ref?.nombre} {record.vehiculo?.modelo_ref?.nombre}
-        </Text>
-      ),
+      title: 'Aplicar',
+      key: 'aplicar',
+      width: '100px',
+      render: (record: CargoTipoDto) => (
+        <Checkbox 
+          checked={selectedCargos[record.id]?.selected} 
+          onChange={(e) => onCargoSelectedChange(record.id, e.target.checked)}
+        />
+      )
     },
     {
-      title: 'Año',
-      dataIndex: ['vehiculo', 'anio'],
-      key: 'anio',
+      title: 'Cargo',
+      key: 'nombre',
+      render: (record: CargoTipoDto) => (
+        <Space direction="vertical" size={0}>
+          <Text>{record.nombre}</Text>
+          {record.es_vinculante && (
+            <Badge status="warning" text="Obligatorio para saldar venta" style={{ fontSize: '11px' }} />
+          )}
+        </Space>
+      )
     },
     {
-      title: 'Precio Estimado',
-      dataIndex: 'precio_venta_estimado',
-      key: 'estimado',
-      render: (val: number) => (
-        <Text type="secondary">
-          {new Intl.NumberFormat('es-DO', {
-            style: 'currency',
-            currency: 'DOP',
-          }).format(val)}
-        </Text>
-      ),
-    },
-    {
-      title: 'Precio Venta Final',
-      key: 'precio_final',
+      title: 'Monto',
+      key: 'monto',
       width: '200px',
-      render: (record: any) => (
+      render: (record: CargoTipoDto) => (
         <InputNumber
           style={{ width: '100%' }}
-          value={editedPrices[record.id]}
-          onChange={(val) => handlePriceChange(record.id, val)}
-          formatter={(value) =>
-            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-          }
+          disabled={!record.es_editable || !selectedCargos[record.id]?.selected}
+          value={selectedCargos[record.id]?.monto}
+          onChange={(val) => onCargoMontoChange(record.id, val)}
+          formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
           parser={(value) => value!.replace(/\$\s?|(,*)/g, '') as any}
         />
-      ),
-    },
+      )
+    }
   ]
 
   const onSelectChange = (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
@@ -225,7 +254,51 @@ const RegisterVenta = () => {
 
           <Table
             rowSelection={rowSelection}
-            columns={columns}
+            columns={[
+              {
+                title: 'Moto',
+                key: 'moto',
+                render: (record: any) => (
+                  <Text strong>
+                    {record.vehiculo?.marca_ref?.nombre} {record.vehiculo?.modelo_ref?.nombre}
+                  </Text>
+                ),
+              },
+              {
+                title: 'Año',
+                dataIndex: ['vehiculo', 'anio'],
+                key: 'anio',
+              },
+              {
+                title: 'Precio Estimado',
+                dataIndex: 'precio_venta_estimado',
+                key: 'estimado',
+                render: (val: number) => (
+                  <Text type="secondary">
+                    {new Intl.NumberFormat('es-DO', {
+                      style: 'currency',
+                      currency: 'DOP',
+                    }).format(val)}
+                  </Text>
+                ),
+              },
+              {
+                title: 'Precio Venta Final',
+                key: 'precio_final',
+                width: '200px',
+                render: (record: any) => (
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    value={editedPrices[record.id]}
+                    onChange={(val) => handlePriceChange(record.id, val)}
+                    formatter={(value) =>
+                      `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                    }
+                    parser={(value) => value!.replace(/\$\s?|(,*)/g, '') as any}
+                  />
+                ),
+              },
+            ]}
             dataSource={inventory}
             rowKey="id"
             pagination={{ pageSize: 5 }}
@@ -243,6 +316,15 @@ const RegisterVenta = () => {
                 </Col>
               </Row>
             )}
+          />
+
+          <Divider orientation="left">Cargos Adicionales</Divider>
+
+          <Table 
+            columns={cargoColumns}
+            dataSource={cargoTipos}
+            rowKey="id"
+            pagination={false}
           />
 
           {tipoPago === 'CREDITO' && (

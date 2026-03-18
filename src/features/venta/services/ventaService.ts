@@ -1,5 +1,5 @@
 import serverCore from '../../../interceptors/axiosInstance';
-import type { CreatePagoDto, CreateVentaDto, CuotaDto, PagoDto, VentaDto } from '../dto-ventaDto';
+import type { CargoTipoDto, CreatePagoDto, CreateVentaDto, CuotaDto, PagoDto, VentaDto } from '../dto-ventaDto';
 
 class VentaService {
   getVentas = async (params?: any): Promise<{ data: VentaDto[] }> => {
@@ -39,6 +39,11 @@ class VentaService {
 
   getDocument = async (url: string): Promise<Blob> => {
     const res = await serverCore.get(url, { responseType: 'blob' });
+    return res.data;
+  };
+
+  getTipoCargos = async (): Promise<{ data: CargoTipoDto[] }> => {
+    const res = await serverCore.get(`/venta/config/tipos-cargos`);
     return res.data;
   };
 }

@@ -203,13 +203,15 @@ const ViewVenta = () => {
             <Tag
               color={
                 (venta.estado_venta || venta.estado) === 'ACTIVA'
-                  ? 'blue'
+                  ? (venta.cargos?.some((c: any) => c.es_vinculante && c.saldo_pendiente > 0) ? 'warning' : 'blue')
                   : (venta.estado_venta || venta.estado) === 'PAGADA'
                   ? 'green'
                   : 'red'
               }
             >
-              {venta.estado_venta || venta.estado}
+              {(venta.estado_venta || venta.estado) === 'ACTIVA' && venta.cargos?.some((c: any) => c.es_vinculante && c.saldo_pendiente > 0) 
+                ? 'Pendiente por cargos' 
+                : (venta.estado_venta || venta.estado)}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Tipo Pago">
@@ -311,35 +313,49 @@ const ViewVenta = () => {
                     {
                       title: 'Estado',
                       dataIndex: 'estado',
-                      render: (e) => (
-                        <Tag
-                          color={
-                            e === 'PENDIENTE'
-                              ? 'orange'
-                              : e === 'PAGADA'
-                              ? 'green'
-                              : 'red'
-                          }
-                        >
-                          {e}
-                        </Tag>
+                      render: (e, record: any) => (
+                        <Space direction="vertical" size={0}>
+                          <Tag
+                            color={
+                              e === 'PENDIENTE'
+                                ? 'orange'
+                                : e === 'PAGADA'
+                                ? 'green'
+                                : 'red'
+                            }
+                          >
+                            {e}
+                          </Tag>
+                          {record.mora_condonada > 0 && record.estado === 'PAGADA' && (
+                            <Text type="success" style={{ fontSize: '11px' }}>
+                              Mora condonada: ${record.mora_condonada.toLocaleString()}
+                            </Text>
+                          )}
+                        </Space>
                       ),
+                    },
+                    {
+                      title: 'Mora Calc.',
+                      dataIndex: 'mora_calculada',
+                      render: (val) => `$${val?.toLocaleString() || '0'}`,
+                    },
+                    {
+                      title: 'Mora Pagada',
+                      dataIndex: 'mora_pagada',
+                      render: (val) => `$${val?.toLocaleString() || '0'}`,
                     },
                     {
                       title: 'Acciones',
                       key: 'acciones',
-                      render: (_, record) => {
-                        const hasPayments = record.monto_pagado > 0 || record.estado === 'PAGADA'
-                        return hasPayments ? (
-                          <Tooltip title="Imprimir recibo de cuota">
-                            <CustomButton
-                              type="text"
-                              icon={<PrinterOutlined />}
-                              onClick={() => handlePrintReceipt(`${API_BASE_URL}/documents/installments/${record.id}/receipt`)}
-                            />
-                          </Tooltip>
-                        ) : null
-                      }
+                      render: (_, record) => (
+                        <Tooltip title="Imprimir recibo de cuota">
+                          <CustomButton
+                            type="text"
+                            icon={<PrinterOutlined />}
+                            onClick={() => handlePrintReceipt(`${API_BASE_URL}/documents/installments/${record.id}/receipt`)}
+                          />
+                        </Tooltip>
+                      )
                     }
                   ]}
                 />
@@ -352,10 +368,50 @@ const ViewVenta = () => {
                 <Table
                   dataSource={venta.pagos || []}
                   rowKey="id"
+                  expandable={{
+                    expandedRowRender: (record: any) => {
+                      const dist = record.detalles || record.distribucion || []
+                      return (
+                        <div style={{ margin: 10 }}>
+                          {record.descripcion && (
+                            <div style={{ marginBottom: 8 }}>
+                              <Text strong>Nota: </Text>
+                              <Text italic>{record.descripcion}</Text>
+                            </div>
+                          )}
+                          <Text strong>Desglose del pago:</Text>
+                          <ul>
+                            {dist.map((d: any, i: number) => {
+                              let label = `${d.tipo} ${d.id_referencia}`
+                              if (d.tipo === 'CUOTA') {
+                                const cuota = venta.cuotas?.find(c => c.id === d.id_referencia)
+                                if (cuota) label = `Cuota #${cuota.numero_cuota}`
+                              } else if (d.tipo === 'CARGO') {
+                                const cargo = venta.cargos?.find(c => c.id === d.id_referencia)
+                                if (cargo) label = `Cargo: ${cargo.nombre}`
+                              }
+
+                              return (
+                                <li key={i}>
+                                  <Text>{label} → <Text strong>${d.monto.toLocaleString()}</Text></Text>
+                                  {d.monto_mora > 0 && (
+                                    <Text type="danger" style={{ marginLeft: 8 }}>
+                                      (mora: ${d.monto_mora.toLocaleString()})
+                                    </Text>
+                                  )}
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        </div>
+                      )
+                    },
+                  }}
                   columns={[
                     { title: 'Fecha', dataIndex: 'fecha_pago', render: (d) => d?.split('T')[0] || 'N/A' },
                     { title: 'Monto', dataIndex: 'monto_total', render: (val) => `$${val?.toLocaleString() || '0'}` },
                     { title: 'Método', dataIndex: 'metodo_pago' },
+                    { title: 'Descripción', dataIndex: 'descripcion', ellipsis: true },
                     { title: 'Usuario', dataIndex: 'usuario_insercion' },
                     {
                       title: 'Acciones',
@@ -423,6 +479,47 @@ const ViewVenta = () => {
                     )
                   })}
                 </div>
+              )
+            },
+            {
+              key: '5',
+              label: 'Cargos',
+              children: (
+                <Table 
+                  dataSource={venta.cargos || []}
+                  rowKey="id"
+                  columns={[
+                    { title: 'Cargo', dataIndex: 'nombre' },
+                    { 
+                      title: 'Monto Total', 
+                      dataIndex: 'monto_total',
+                      render: (val) => `$${val?.toLocaleString() || '0'}` 
+                    },
+                    { 
+                      title: 'Pagado', 
+                      dataIndex: 'monto_pagado',
+                      render: (val) => `$${val?.toLocaleString() || '0'}` 
+                    },
+                    { 
+                      title: 'Pendiente', 
+                      dataIndex: 'saldo_pendiente',
+                      render: (val) => (
+                        <Text type={val > 0 ? 'danger' : 'success'}>
+                          ${val?.toLocaleString() || '0'}
+                        </Text>
+                      )
+                    },
+                    { 
+                      title: 'Estado', 
+                      dataIndex: 'estado',
+                      render: (e) => (
+                        <Tag color={e === 'PAGADO' ? 'green' : 'orange'}>
+                          {e}
+                        </Tag>
+                      )
+                    }
+                  ]}
+                />
               )
             }
           ]}
